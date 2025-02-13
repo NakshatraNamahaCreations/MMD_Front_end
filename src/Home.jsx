@@ -52,7 +52,7 @@ useEffect(() => {
   };
 
   fetchOverdueCount();
-}, []);
+}, [adminData.name]);
 
  
   
@@ -95,7 +95,7 @@ useEffect(() => {
           }
         );
   
-        setfollowupcount(response.data.data.followup_count);
+        setfollowupcount(response.data.data.followups ? response.data.data.followups : 0);
       } catch (error) {
         console.error("Error fetching follow-up count:", error);
       }
@@ -138,19 +138,18 @@ useEffect(() => {
 
     const fetchCount = async () => {
       try {
-        // Use POST method to send 'assign' in the request body
-        const response = await axios.post(
-          'https://makemydocuments.nakshatranamahacreations.in/get-count.php', 
-          data1, // Send 'assign' as the request body
+
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/lead/count`,
+
           {
             headers: {
-              "Content-Type": "application/json", // Define content type as JSON
+              "Content-Type": "application/json", 
             },
           }
         );
 
-        // Set the count value from the response data
-        settotalCount(response.data.count);
+        settotalCount(response.data.data.totalLeads ? response.data.data.totalLeads : 0 );
 
       } catch (error) {
         console.error("Error fetching count:", error);

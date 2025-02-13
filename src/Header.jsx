@@ -83,21 +83,23 @@ console.log ( selectedItem ,"selectedItem")
   };
 
   const handleSignOut = async () => {
-    try {
-      const response = await axios.get(
-        "https://makemydocuments.nakshatranamahacreations.in/logout.php"
-      );
+    sessionStorage.removeItem("admin"); 
+    window.location.href = "/"; 
+    // try {
+    //   const response = await axios.get(
+    //     "https://makemydocuments.nakshatranamahacreations.in/logout.php"
+    //   );
 
-      if (response.status === 200) {
-        localStorage.removeItem("authToken");
-        sessionStorage.removeItem("authToken");
-        navigate("/new-leads");
-      } else {
-        console.error("Failed to sign out");
-      }
-    } catch (error) {
-      console.error("Error during sign out", error);
-    }
+    //   if (response.status === 200) {
+    //     localStorage.removeItem("authToken");
+    //     sessionStorage.removeItem("authToken");
+    //     navigate("/new-leads");
+    //   } else {
+    //     console.error("Failed to sign out");
+    //   }
+    // } catch (error) {
+    //   console.error("Error during sign out", error);
+    // }
   };
 
   return (

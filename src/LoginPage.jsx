@@ -30,50 +30,48 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    navigate("/home");
 
     try {
-      let url;
-      let requestData;
+        let url;
+        let requestData;
 
-      if (isForgotPassword) {
-        url = `${process.env.REACT_APP_API_URL}/forget.php`;
-        requestData = { email: formData.email };
-      } else {
-      url = `${process.env.REACT_APP_API_URL}/api/auth/login`;
-        requestData = {
-          username: formData.username,  
-          password: formData.password,
-        };
-      }
-
-      const response = await axios.post(url, requestData, {
-        headers: { "Content-Type": "application/json" },
-        // withCredentials: true,
-      });
-
-      const result = response.data;
-       const users = result.user
-      if (result.success) {
-          
-              if (!isForgotPassword) {
-          
-          // localStorage.setItem("authToken", result.token); 
-          sessionStorage.setItem("admin", JSON.stringify(users));
-        
-          navigate("/home");
+        if (isForgotPassword) {
+            url = `${process.env.REACT_APP_API_URL}/forget.php`;
+            requestData = { email: formData.email };
+        } else {
+            url = `${process.env.REACT_APP_API_URL}/api/auth/login`;
+            requestData = {
+                username: formData.username,
+                password: formData.password,
+            };
         }
-      } else {
-        setError(result.message || "An error occurred. Please try again.");
-      }
+
+        const response = await axios.post(url, requestData, {
+            headers: { "Content-Type": "application/json" },
+        });
+
+        const result = response.data;
+        const user = result.user;
+
+        if (result.success) {
+            if (!isForgotPassword) {
+                sessionStorage.setItem("admin", JSON.stringify(user));
+                setTimeout(() => {
+                    navigate("/home"); 
+                }, 100); 
+            }
+        } else {
+            setError(result.message || "An error occurred. Please try again.");
+        }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Unable to connect to the server. Please try again later."
-      );
+        setError(
+            err.response?.data?.message || "Unable to connect to the server. Please try again later."
+        );
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   return (
     <div
