@@ -35,9 +35,9 @@ useEffect(() => {
   const data1 = { assign: adminData.name };
   const fetchOverdueCount = async () => {
     try {
-      const response = await axios.post(
-        'https://makemydocuments.nakshatranamahacreations.in/get-overduecount.php',
-        data1, // Send data1 as the body of the request
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+      
         {
           headers: {
             "Content-Type": "application/json",
@@ -45,14 +45,14 @@ useEffect(() => {
         }
       );
       
-      setOverdueCount(response.data.overdue_count);
+      setOverdueCount(response.data.data.overdueFollowUps ? response.data.data.overdueFollowUps : 0);
     } catch (error) {
       console.error("Error fetching dead count:", error);
     }
   };
 
   fetchOverdueCount();
-}, [adminData.name]);
+}, []);
 
  
   
@@ -60,9 +60,9 @@ useEffect(() => {
     const data1 = { assign: adminData.name };
     const fetchDeadCount = async () => {
       try {
-        const response = await axios.post(
-          'https://makemydocuments.nakshatranamahacreations.in/get-leaddeadcount.php',
-          data1, // Send data1 as the body of the request
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+  
           {
             headers: {
               "Content-Type": "application/json",
@@ -70,7 +70,7 @@ useEffect(() => {
           }
         );
         
-        setdeadCount(response.data.lead_dead_count);
+        setdeadCount(response.data.data.deadLeads ? response.data.data.deadLeads : 0);
       } catch (error) {
         console.error("Error fetching dead count:", error);
       }
@@ -85,9 +85,9 @@ useEffect(() => {
     const fetchFollowUpCount = async () => {
       try {
         // Use POST to send `data1` as the body of the request
-        const response = await axios.post(
-          'https://makemydocuments.nakshatranamahacreations.in/get-leadfollowupcount.php',
-          data1, // Send data1 in the body
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+      
           {
             headers: {
               "Content-Type": "application/json",
@@ -95,7 +95,7 @@ useEffect(() => {
           }
         );
   
-        setfollowupcount(response.data.followup_count);
+        setfollowupcount(response.data.data.followup_count);
       } catch (error) {
         console.error("Error fetching follow-up count:", error);
       }
@@ -110,10 +110,10 @@ useEffect(() => {
   
     const fetchConvertedCount = async () => {
       try {
-        // Use POST request to send data1 in the request body
-        const response = await axios.post(
-          'https://makemydocuments.nakshatranamahacreations.in/get-leadconvertedcount.php',
-          data1, // Send data1 as the body of the POST request
+ 
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+      
           {
             headers: {
               "Content-Type": "application/json",
@@ -122,7 +122,7 @@ useEffect(() => {
         );
   
         // Set the converted count to the state
-        setconvertedcount(response.data.converted_count);
+        setconvertedcount(response.data.data.convertedLeads ? response.data.data.convertedLeads : 0);
       } catch (error) {
         console.error("Error fetching converted count:", error);
         // You can set an error state here if needed
@@ -166,19 +166,19 @@ useEffect(() => {
 
     const fetchInprocessCount = async () => {
       try {
-        // Use POST method to send 'assign' in the request body
-        const response = await axios.post(
-          'https://makemydocuments.nakshatranamahacreations.in/get-leadinprocesscount.php', 
-          data1, // Send 'assign' in the request body
+     
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+         
           {
             headers: {
-              "Content-Type": "application/json", // Specify content type
+              "Content-Type": "application/json", 
             },
           }
         );
 
         // Set the 'lead_in_process_count' value from the response data
-        setinprocesscount(response.data.lead_in_process_count);
+        setinprocesscount(response.data.data.inProgressLeads ? response.data.data.inProgressLeads : 0);
 
       } catch (error) {
         console.error("Error fetching lead in process count:", error);
@@ -197,23 +197,23 @@ useEffect(() => {
 
   const fetchTodayCount = async () => {
     try {
-      // Use POST method to send 'assign' in the request body
-      const response = await axios.post(
-        'https://makemydocuments.nakshatranamahacreations.in/get-todaysfollowupcount.php', 
-        data1, 
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
+        
         {
           headers: {
-            "Content-Type": "application/json", // Specify content type
+            "Content-Type": "application/json", 
           },
         }
       );
 
-      // Set the 'lead_in_process_count' value from the response data
-      settodaysfollowupcount(response.data.todays_count);
+
+      settodaysfollowupcount(response.data.data.todayFollowUps ? response.data.data.todayFollowUps : 0);
 
     } catch (error) {
       console.error("Error fetching lead in process count:", error);
-      // Handle error if needed
+  
     }
   };
 

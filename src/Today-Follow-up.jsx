@@ -158,7 +158,7 @@ function TodayFollowUp({selectedItem}) {
 
     try {
       const response = await fetch(
-        `https://makemydocuments.nakshatranamahacreations.in/status.php`,
+        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
         {
           method: "POST",
           headers: {
@@ -167,17 +167,15 @@ function TodayFollowUp({selectedItem}) {
           body: new URLSearchParams({
             id: id, // Pass the lead ID
             status: status, // Pass the selected status
-            assign: assignedUser, // Pass the assigned user
+
           }),
         }
       );
 
-
       if (response.ok) {
-       
-        console.log("response",response)
+        console.log("response", response);
 
-        window.location.reload();
+        // window.location.reload();
         alert(
           `Status updated to ${status} and assigned to ${assignedUser} successfully!`
         );
@@ -189,14 +187,13 @@ function TodayFollowUp({selectedItem}) {
     }
   };
 
-
   const handleDelete = () => {
-    if (adminData && selectedLead && selectedLead.id) {
+    if (selectedLead && selectedLead._id) {
       if (window.confirm("Are you sure you want to delete this lead?")) {
+
+        // `https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`
         axios
-          .post(`https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`, {
-            user_id: adminData.id, // Pass the admin user ID
-          })
+          .delete(`${process.env.REACT_APP_API_URL}/api/lead/deleteLead/${selectedLead._id}`)
           .then((response) => {
             if (response.data.status === "success") {
               alert("Lead deleted successfully!");
@@ -229,16 +226,16 @@ function TodayFollowUp({selectedItem}) {
   const fetchCommentData = async (leadId) => {
     try {
       const response = await fetch(
-        `https://makemydocuments.nakshatranamahacreations.in/get-comment.php?id=${leadId}`
+        `${process.env.REACT_APP_API_URL}/api/getComment?document_id=${leadId}`,
+
       );
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-      console.log("API Response:", data);
-  
+
       // Check the response format
       if (data.status === "success" && Array.isArray(data.data)) {
         setSelectedLead((prev) => ({
@@ -258,34 +255,50 @@ function TodayFollowUp({selectedItem}) {
   };
   
   const handleCommentSubmit = async () => {
+    console.log("Selected Lead:", selectedLead);
+
     try {
-      if (!selectedLead?.id || !comment) {
+      if (!selectedLead?._id || !comment.trim()) {
         console.error("Both Lead ID and Comment are required.");
         return;
       }
-  
+
       const data = {
-        id: selectedLead.id,
+        id: selectedLead._id,
         comment: comment,
-        assign: adminData.name || "Unassigned",
+        assign: adminData?.name || "Unassigned",
       };
-  
+
+
+      setSelectedLead((prev) => ({
+        ...prev,
+        comments: [
+          ...(prev?.comments || []),
+          {
+            comment: comment,
+            date: new Date().toISOString(),
+            assign: adminData?.name || "Unassigned",
+            _id: Math.random().toString(36).substr(2, 9),
+          },
+        ],
+      }));
+
+
       const response = await axios.post(
-        "https://makemydocuments.nakshatranamahacreations.in/comment.php",
+        `${process.env.REACT_APP_API_URL}/api/addComment`,
         data
       );
-  
+
       if (response.data.status === "error") {
         console.error("Error from server:", response.data.message);
         return;
       }
-  
+
       console.log("Comment submitted successfully:", response.data);
-  
-      // Refetch updated comments after submission
-      await fetchCommentData(selectedLead.id);
-  
-      // Reset comment input and close modal
+
+
+      await fetchCommentData(selectedLead._id);
+
       setComment("");
       setShowCommentInput(false);
     } catch (error) {
@@ -420,52 +433,52 @@ function TodayFollowUp({selectedItem}) {
     const filteredByAppliedFilters = applyFilters(currentLeads);
 
 
-  const handleDateSubmit = async () => {
-    if (!selectedDate) {
-      alert("Please select a date.");
-      return;
-    }
-
-    if (!selectedLead) {
-      alert("Please select a lead.");
-      return;
-    }
-
-    const followUpTime = selectedDate;
-    const assign = assignValues[selectedLead.index];
-
-    try {
-      // Construct query parameters
-      const params = new URLSearchParams({
-        followuptime: followUpTime,
-        id: selectedLead?.id,
-        status: "followup",
-        assign: assign,
-      }).toString();
-
-      const response = await axios.post(
-        `https://makemydocuments.nakshatranamahacreations.in/create-follow-up.php?${params}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        console.log("Follow-up time saved successfully!", response.data);
-        alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
-        window.location.reload();
-      } else {
-        console.error("API Error:", response.data);
-        alert("Failed to save follow-up time and status.");
+    const handleDateSubmit = async () => {
+      if (!selectedDate) {
+        alert("Please select a date.");
+        return;
       }
-    } catch (error) {
-      console.error("Error saving follow-up time:", error);
-      alert("An error occurred while saving the follow-up time.");
-    }
-  };
+    
+      if (!selectedLead?._id) {
+        alert("Please select a valid lead.");
+        return;
+      }
+    
+      const followUpTime = selectedDate;
+      const assign = assignValues[selectedLead.index] || "Unassigned";
+    
+      const requestBody = {
+        status: "followup",
+        followupDate: new Date(followUpTime).toISOString(), 
+        assign: assign,
+        id: selectedLead._id, 
+      };
+    
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/lead/follow-up`,
+          requestBody,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+    
+        if (response.status === 200) {
+          console.log("Follow-up time saved successfully!", response.data);
+          alert("Follow-up time and status updated successfully!");
+          setShowPopup(false); 
+          window.location.reload();
+        } else {
+          console.error("API Error:", response.data);
+          alert("Failed to save follow-up time and status.");
+        }
+      } catch (error) {
+        console.error("Error saving follow-up time:", error);
+        alert("An error occurred while saving the follow-up time.");
+      }
+    };
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())

@@ -220,9 +220,7 @@ useEffect(() => {
   
   const handleDelete = () => {
     if ( selectedLead && selectedLead._id) {
-      if (window.confirm("Are you sure you want to delete this lead?")) {
-       console.log("slected lead", selectedLead._id);
-       
+      if (window.confirm("Are you sure you want to delete this lead?")) {       
         // `https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`
         axios
           .delete( `${process.env.REACT_APP_API_URL}/api/lead/deleteLead/${selectedLead._id}`)
@@ -275,8 +273,7 @@ useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())
       .then((data) => {
-        console.log("API Response:", data); 
-  
+    
         if (data && data.user && Array.isArray(data.user)) {
           setUsers(data.user); 
         } else {
@@ -500,36 +497,37 @@ useEffect(() => {
       alert("Please select a date.");
       return;
     }
-
-    if (!selectedLead) {
-      alert("Please select a lead.");
+  
+    if (!selectedLead?._id) {
+      alert("Please select a valid lead.");
       return;
     }
-
+  
     const followUpTime = selectedDate;
-
+    const assign = assignValues[selectedLead.index] || "Unassigned";
+  
+    const requestBody = {
+      status: "followup",
+      followupDate: new Date(followUpTime).toISOString(), 
+      assign: assign,
+      id: selectedLead._id, 
+    };
+  
     try {
-      // Construct query parameters
-      const params = new URLSearchParams({
-        followuptime: followUpTime,
-        id: selectedLead?.id,
-        status: "followup",
-        assign: assignedUser,
-      }).toString();
-
       const response = await axios.post(
-        `https://makemydocuments.nakshatranamahacreations.in/create-follow-up.php?${params}`,
+        `${process.env.REACT_APP_API_URL}/api/lead/follow-up`,
+        requestBody,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
+  
       if (response.status === 200) {
         console.log("Follow-up time saved successfully!", response.data);
         alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
+        setShowPopup(false); 
         window.location.reload();
       } else {
         console.error("API Error:", response.data);

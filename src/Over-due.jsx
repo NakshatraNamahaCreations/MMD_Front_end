@@ -232,12 +232,12 @@ console.log(adminData.name);
   };
 
   const handleDelete = () => {
-    if (adminData && selectedLead && selectedLead.id) {
+    if (selectedLead && selectedLead._id) {
       if (window.confirm("Are you sure you want to delete this lead?")) {
+
+        // `https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`
         axios
-          .post(`https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`, {
-            user_id: adminData.id, // Pass the admin user ID
-          })
+          .delete(`${process.env.REACT_APP_API_URL}/api/lead/deleteLead/${selectedLead._id}`)
           .then((response) => {
             if (response.data.status === "success") {
               alert("Lead deleted successfully!");
@@ -379,9 +379,9 @@ console.log(adminData.name);
   
     const requestBody = {
       status: "followup",
-      followupDate: new Date(followUpTime).toISOString(), // Ensure correct date format
+      followupDate: new Date(followUpTime).toISOString(), 
       assign: assign,
-      id: selectedLead._id, // Use `_id` as it's a MongoDB document
+      id: selectedLead._id, 
     };
   
     try {
@@ -398,8 +398,8 @@ console.log(adminData.name);
       if (response.status === 200) {
         console.log("Follow-up time saved successfully!", response.data);
         alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
-        // window.location.reload();
+        setShowPopup(false); 
+        window.location.reload();
       } else {
         console.error("API Error:", response.data);
         alert("Failed to save follow-up time and status.");
@@ -409,6 +409,7 @@ console.log(adminData.name);
       alert("An error occurred while saving the follow-up time.");
     }
   };
+  
   
 
   // Handle status change and show the popup
@@ -454,8 +455,8 @@ console.log(leads);
     // }
 
     axios
-      .post(
-        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
+      .put(
+        `${process.env.REACT_APP_API_URL}/api/lead/updateAssign`,
         {
           id: leadId,
           assign: value,
@@ -475,8 +476,7 @@ console.log(leads);
   };
 
   useEffect(() => {
-    // Fetch data from the API
-    fetch("https://makemydocuments.nakshatranamahacreations.in/get-user.php")
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())
       .then((data) => {
         if (data && data.status === "success" && Array.isArray(data.data)) {

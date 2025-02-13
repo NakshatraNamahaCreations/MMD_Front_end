@@ -4,7 +4,7 @@ import './profilepage.css'
 import { useNavigate } from "react-router-dom";
 
 function MyProfilePage() {
-  const adminData = JSON.parse(localStorage.getItem("admin"));
+  const adminData = JSON.parse(sessionStorage.getItem("admin"));
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -81,21 +81,22 @@ function MyProfilePage() {
       }
   
       // Send FormData to the server
-      const response = await axios.post(
-        `https://makemydocuments.nakshatranamahacreations.in/edit-user.php?id=${adminData.id}`,
+      const response = await axios.put(
+       `${process.env.REACT_APP_API_URL}/api/user/editUser/${adminData.id}`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", // Important for file uploads
+            "Content-Type": "multipart/form-data", 
           },
         }
       );
   
       if (response.data && response.data.status === "success") {
         alert("Profile updated successfully");
-        const data = response.data.data;
-  
-        localStorage.setItem("admin", JSON.stringify(data));
+        const data = response.data.user;
+console.log(response.data.user);
+
+        sessionStorage.setItem("admin", JSON.stringify(data));
   
         setEditingData((prevData) => ({
           ...prevData,

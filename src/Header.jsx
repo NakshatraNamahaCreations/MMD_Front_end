@@ -12,18 +12,19 @@ function Header({ selectedItem }) {
   const offcanvasRef = useRef(null);
   const userProfileRef = useRef(null);
 console.log ( selectedItem ,"selectedItem")
-  const adminData = localStorage.getItem("admin");
+  const adminData = sessionStorage.getItem("admin");
   let parsedAdminData = null;
 
  
   if (adminData && adminData !== "undefined") {
     try {
       parsedAdminData = JSON.parse(adminData);
+
+      
     } catch (error) {
       console.error("Error parsing admin data:", error);
     }
   }
-
   const toggleOffcanvas = () => {
     setOffcanvasVisible(!isOffcanvasVisible);
   };
@@ -57,7 +58,7 @@ console.log ( selectedItem ,"selectedItem")
 
     try {
       const response = await axios.post(
-        "https://makemydocuments.nakshatranamahacreations.in/search.php",
+        `${process.env.REACT_APP_API_URL}/api/search`,
         { search: localQuery.trim() }
       );
 

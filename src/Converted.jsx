@@ -205,8 +205,8 @@ function Converted({selectedItem}) {
     // }
 
     axios
-      .post(
-        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
+      .put(
+        `${process.env.REACT_APP_API_URL}/api/lead/updateAssign`,
         {
           id: leadId,
           assign: value,
@@ -432,18 +432,25 @@ function Converted({selectedItem}) {
       return;
     }
   
-    const followUpTime = selectedDate; // Use the selected date
+    if (!selectedLead?._id) {
+      alert("Please select a valid lead.");
+      return;
+    }
+  
+    const followUpTime = selectedDate;
+    // const assign = assignValues[selectedLead.index] || "Unassigned";
+  
+    const requestBody = {
+      status: "followup",
+      followupDate: new Date(followUpTime).toISOString(), 
+      // assign: assign,
+      id: selectedLead._id, 
+    };
   
     try {
-      const payload = {
-        followuptime: followUpTime,
-        id: selectedLead.id, // Dynamic lead ID
-        status: "followup", // Update the status to "followup"
-      };
-  
       const response = await axios.post(
-        "https://makemydocuments.nakshatranamahacreations.in/follow-up.php",
-        payload,
+        `${process.env.REACT_APP_API_URL}/api/lead/follow-up`,
+        requestBody,
         {
           headers: {
             "Content-Type": "application/json",
@@ -454,7 +461,8 @@ function Converted({selectedItem}) {
       if (response.status === 200) {
         console.log("Follow-up time saved successfully!", response.data);
         alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
+        setShowPopup(false); 
+        window.location.reload();
       } else {
         console.error("API Error:", response.data);
         alert("Failed to save follow-up time and status.");
@@ -465,21 +473,20 @@ function Converted({selectedItem}) {
     }
   };
   useEffect(() => {
-    // Fetch data from the API
-    fetch('https://makemydocuments.nakshatranamahacreations.in/get-user.php')
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())
       .then((data) => {
-        // Extract the 'data' field from the response and set it to users
-        if (data && data.status === "success" && Array.isArray(data.data)) {
-          setUsers(data.data); // Set users if the API response is correct
+    
+        if (data && data.user && Array.isArray(data.user)) {
+          setUsers(data.user); 
         } else {
-          console.error('Invalid API response format');
+          console.error("Invalid API response format");
         }
       })
       .catch((error) => {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching users data:", error);
       });
-  }, []); 
+  }, []);
 
 
 

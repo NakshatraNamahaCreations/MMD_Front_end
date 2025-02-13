@@ -185,8 +185,8 @@ function Dead({ selectedItem }) {
     // }
 
     axios
-      .post(
-        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
+      .put(
+        `${process.env.REACT_APP_API_URL}/api/lead/updateAssign`,
         {
           id: leadId,
           assign: value,
@@ -297,16 +297,17 @@ function Dead({ selectedItem }) {
   const fetchCommentData = async (leadId) => {
     try {
       const response = await fetch(
-        `https://makemydocuments.nakshatranamahacreations.in/get-comment.php?id=${leadId}`
-      );
+        `${process.env.REACT_APP_API_URL}/api/getComment?document_id=${leadId}`,
 
+      );
+  
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
+  
       const data = await response.json();
-      console.log("API Response:", data);
-
+      console.log("API Response:", );
+  
       // Check the response format
       if (data.status === "success" && Array.isArray(data.data)) {
         setSelectedLead((prev) => ({
@@ -325,37 +326,51 @@ function Dead({ selectedItem }) {
     }
   };
 
-  const handleCommentSubmit = async () => {
+  const handleCommentSubmit = async () => {  
     try {
-      if (!selectedLead?.id || !comment) {
+      if (!selectedLead?._id || !comment.trim()) {
         console.error("Both Lead ID and Comment are required.");
         return;
       }
-
+  
       const data = {
-        id: selectedLead.id,
+        id: selectedLead._id,  
         comment: comment,
-        assign: adminData.name || "Unassigned",
+        assign: adminData?.name || "Unassigned", 
       };
-
+  
+      
+      setSelectedLead((prev) => ({
+        ...prev,
+        comments: [
+          ...(prev?.comments || []),
+          {
+            comment: comment,
+            date: new Date().toISOString(),
+            assign: adminData?.name || "Unassigned",
+            _id: Math.random().toString(36).substr(2, 9), 
+          },
+        ],
+      }));
+  
+  
       const response = await axios.post(
-        "https://makemydocuments.nakshatranamahacreations.in/comment.php",
+        `${process.env.REACT_APP_API_URL}/api/addComment`,
         data
       );
-
+  
       if (response.data.status === "error") {
         console.error("Error from server:", response.data.message);
         return;
       }
-
+  
       console.log("Comment submitted successfully:", response.data);
+  
 
-      // Refetch updated comments after submission
-      await fetchCommentData(selectedLead.id);
-
-      // Reset comment input and close modal
-      setComment("");
-      setShowCommentInput(false);
+      await fetchCommentData(selectedLead._id);
+  
+      setComment(""); 
+      setShowCommentInput(false); 
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
@@ -424,12 +439,12 @@ function Dead({ selectedItem }) {
   };
   useEffect(() => {
     // Fetch data from the API
-    fetch("https://makemydocuments.nakshatranamahacreations.in/get-user.php")
+    fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())
       .then((data) => {
-        // Extract the 'data' field from the response and set it to users
-        if (data && data.status === "success" && Array.isArray(data.data)) {
-          setUsers(data.data); // Set users if the API response is correct
+     
+        if (data && data.user && Array.isArray(data.user)) {
+          setUsers(data.user);
         } else {
           console.error("Invalid API response format");
         }

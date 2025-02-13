@@ -101,18 +101,19 @@ function FollowUp({selectedItem}) {
     const updatedLeads = [...leads];
     updatedLeads[index].assign = value;
     setLeads(updatedLeads);
-    localStorage.setItem("leads", JSON.stringify(updatedLeads));
+    sessionStorage.setItem("leads", JSON.stringify(updatedLeads));
+    console.log(updatedLeads);
 
-    const leadId = updatedLeads[index]?.id;
+    const leadId = updatedLeads[index]?._id;
 
-    if (!leadId) {
-      console.error("Invalid data: leadId or value is missing");
-      return;
-    }
+    // if (!leadId) {
+    //   console.error("Invalid data: leadId or value is missing");
+    //   return;
+    // }
 
     axios
-      .post(
-        "https://makemydocuments.nakshatranamahacreations.in/update-assign.php",
+      .put(
+        `${process.env.REACT_APP_API_URL}/api/lead/updateAssign`,
         {
           id: leadId,
           assign: value,
@@ -147,12 +148,12 @@ function FollowUp({selectedItem}) {
 
 
   const handleDelete = () => {
-    if (adminData && selectedLead && selectedLead.id) {
+    if (selectedLead && selectedLead._id) {
       if (window.confirm("Are you sure you want to delete this lead?")) {
+
+        // `https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`
         axios
-          .post(`https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`, {
-            user_id: adminData.id, // Pass the admin user ID
-          })
+          .delete(`${process.env.REACT_APP_API_URL}/api/lead/deleteLead/${selectedLead._id}`)
           .then((response) => {
             if (response.data.status === "success") {
               alert("Lead deleted successfully!");
@@ -179,7 +180,7 @@ function FollowUp({selectedItem}) {
 
     try {
       const response = await fetch(
-        `https://makemydocuments.nakshatranamahacreations.in/status.php`,
+        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
         {
           method: "POST",
           headers: {
@@ -188,17 +189,13 @@ function FollowUp({selectedItem}) {
           body: new URLSearchParams({
             id: id, // Pass the lead ID
             status: status, // Pass the selected status
-            assign: assignedUser, // Pass the assigned user
           }),
         }
       );
 
-
       if (response.ok) {
-       
-        console.log("response",response)
 
-        window.location.reload();
+        // window.location.reload();
         alert(
           `Status updated to ${status} and assigned to ${assignedUser} successfully!`
         );
@@ -223,16 +220,16 @@ function FollowUp({selectedItem}) {
   const fetchCommentData = async (leadId) => {
     try {
       const response = await fetch(
-        `https://makemydocuments.nakshatranamahacreations.in/get-comment.php?id=${leadId}`
+        `${process.env.REACT_APP_API_URL}/api/getComment?document_id=${leadId}`,
+
       );
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-      console.log("API Response:", data);
-  
+
       // Check the response format
       if (data.status === "success" && Array.isArray(data.data)) {
         setSelectedLead((prev) => ({
@@ -250,43 +247,57 @@ function FollowUp({selectedItem}) {
       console.error("Error fetching comment data:", error);
     }
   };
+
   
   const handleCommentSubmit = async () => {
     try {
-      if (!selectedLead?.id || !comment) {
+      if (!selectedLead?._id || !comment.trim()) {
         console.error("Both Lead ID and Comment are required.");
         return;
       }
-  
+
       const data = {
-        id: selectedLead.id,
+        id: selectedLead._id,
         comment: comment,
-        assign: adminData.name || "Unassigned",
+        assign: adminData?.name || "Unassigned",
       };
-  
+
+
+      setSelectedLead((prev) => ({
+        ...prev,
+        comments: [
+          ...(prev?.comments || []),
+          {
+            comment: comment,
+            date: new Date().toISOString(),
+            assign: adminData?.name || "Unassigned",
+            _id: Math.random().toString(36).substr(2, 9),
+          },
+        ],
+      }));
+
+
       const response = await axios.post(
-        "https://makemydocuments.nakshatranamahacreations.in/comment.php",
+        `${process.env.REACT_APP_API_URL}/api/addComment`,
         data
       );
-  
+
       if (response.data.status === "error") {
         console.error("Error from server:", response.data.message);
         return;
       }
-  
+
       console.log("Comment submitted successfully:", response.data);
-  
-      // Refetch updated comments after submission
-      await fetchCommentData(selectedLead.id);
-  
-      // Reset comment input and close modal
+
+
+      await fetchCommentData(selectedLead._id);
+
       setComment("");
       setShowCommentInput(false);
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
   };
-
   const handleFilterClick = (column) => {
     setFilters((prevFilters) => {
       const newFilters = { ...prevFilters };
@@ -418,37 +429,38 @@ function FollowUp({selectedItem}) {
       alert("Please select a date.");
       return;
     }
-
-    if (!selectedLead) {
-      alert("Please select a lead.");
+  
+    if (!selectedLead?._id) {
+      alert("Please select a valid lead.");
       return;
     }
-
+  
     const followUpTime = selectedDate;
-
+    const assign = assignValues[selectedLead.index] || "Unassigned";
+  
+    const requestBody = {
+      status: "followup",
+      followupDate: new Date(followUpTime).toISOString(), 
+      assign: assign,
+      id: selectedLead._id, 
+    };
+  
     try {
-      // Construct query parameters
-      const params = new URLSearchParams({
-        followuptime: followUpTime,
-        id: selectedLead?.id,
-        status: "followup",
-        assign: assignedUser,
-      }).toString();
-
       const response = await axios.post(
-        `https://makemydocuments.nakshatranamahacreations.in/create-follow-up.php?${params}`,
+        `${process.env.REACT_APP_API_URL}/api/lead/follow-up`,
+        requestBody,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
+  
       if (response.status === 200) {
         console.log("Follow-up time saved successfully!", response.data);
         alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
-        window.location.reload()
+        setShowPopup(false); 
+        window.location.reload();
       } else {
         console.error("API Error:", response.data);
         alert("Failed to save follow-up time and status.");
@@ -458,24 +470,21 @@ function FollowUp({selectedItem}) {
       alert("An error occurred while saving the follow-up time.");
     }
   };
-  useEffect(() => {
-    // Fetch data from the API
-    fetch(
-      "https://makemydocuments.nakshatranamahacreations.in/get-all-user.php"
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        // Extract the 'data' field from the response and set it to users
-        if (data && data.status === "success" && Array.isArray(data.data)) {
-          setUsers(data.data); // Set users if the API response is correct
-        } else {
-          console.error("Invalid API response format");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+   useEffect(() => {
+     fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
+       .then((response) => response.json())
+       .then((data) => {
+     
+         if (data && data.user && Array.isArray(data.user)) {
+           setUsers(data.user); 
+         } else {
+           console.error("Invalid API response format");
+         }
+       })
+       .catch((error) => {
+         console.error("Error fetching users data:", error);
+       });
+   }, []);
 
   return (
     <>

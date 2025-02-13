@@ -14,6 +14,9 @@ function InProcess({ selectedItem }) {
   const [assignmentMessage, setAssignmentMessage] = useState("");
   const [submittedComment, setSubmittedComment] = useState("");
   const [showCommentInput, setShowCommentInput] = useState(false);
+    const [assignValues, setAssignValues] = useState(
+      leads.map((lead) => lead.assign || "Select lead user")
+    );
   const [comment, setComment] = useState("");
   const [users, setUsers] = useState([]);
   const [lead, setLead] = useState({ assign: "" });
@@ -48,9 +51,6 @@ function InProcess({ selectedItem }) {
 
         // Parse the response JSON
         const data = await response.json();
-
-        console.log("API Response Data:----", data); // Debug log to inspect the structure
-
 
         // Reverse the order of the leads if necessary
         const reversedLeads = data.data.reverse();
@@ -182,7 +182,6 @@ function InProcess({ selectedItem }) {
     console.log(updatedLeads);
 
     const leadId = updatedLeads[index]?._id;
-    console.log(leads);
 
     // if (!leadId) {
     //   console.error("Invalid data: leadId or value is missing");
@@ -190,8 +189,8 @@ function InProcess({ selectedItem }) {
     // }
 
     axios
-      .post(
-        `${process.env.REACT_APP_API_URL}/api/updateStatus`,
+      .put(
+        `${process.env.REACT_APP_API_URL}/api/lead/updateAssign`,
         {
           id: leadId,
           assign: value,
@@ -227,7 +226,6 @@ function InProcess({ selectedItem }) {
   const handleDelete = () => {
     if (selectedLead && selectedLead._id) {
       if (window.confirm("Are you sure you want to delete this lead?")) {
-        console.log("slected lead", selectedLead._id);
 
         // `https://makemydocuments.nakshatranamahacreations.in/delete-lead.php?id=${selectedLead.id}`
         axios
@@ -310,7 +308,6 @@ function InProcess({ selectedItem }) {
       }
 
       const data = await response.json();
-      console.log("API Response:",);
 
       // Check the response format
       if (data.status === "success" && Array.isArray(data.data)) {
@@ -414,38 +411,38 @@ function InProcess({ selectedItem }) {
       alert("Please select a date.");
       return;
     }
-
-    if (!selectedLead) {
-      alert("Please select a lead.");
+  
+    if (!selectedLead?._id) {
+      alert("Please select a valid lead.");
       return;
     }
-
+  
     const followUpTime = selectedDate;
-    // const assign = assignValues[selectedLead.index];
-
+    const assign = assignValues[selectedLead.index] || "Unassigned";
+  
+    const requestBody = {
+      status: "followup",
+      followupDate: new Date(followUpTime).toISOString(), 
+      assign: assign,
+      id: selectedLead._id, 
+    };
+  
     try {
-      // Construct query parameters
-      const params = new URLSearchParams({
-        followuptime: followUpTime,
-        id: selectedLead?.id,
-        status: "followup",
-        // assign: assign,
-      }).toString();
-
       const response = await axios.post(
-        `https://makemydocuments.nakshatranamahacreations.in/create-follow-up.php?${params}`,
+        `${process.env.REACT_APP_API_URL}/api/lead/follow-up`,
+        requestBody,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
+  
       if (response.status === 200) {
         console.log("Follow-up time saved successfully!", response.data);
         alert("Follow-up time and status updated successfully!");
-        setShowPopup(false); // Close the popup
-        window.location.reload()
+        setShowPopup(false); 
+        window.location.reload();
       } else {
         console.error("API Error:", response.data);
         alert("Failed to save follow-up time and status.");
@@ -456,20 +453,18 @@ function InProcess({ selectedItem }) {
     }
   };
   useEffect(() => {
-    // Fetch data from the API
-    // fetch("https://makemydocuments.nakshatranamahacreations.in/get-user.php")
     fetch(`${process.env.REACT_APP_API_URL}/api/user/getActiveUser`)
       .then((response) => response.json())
       .then((data) => {
-        // Extract the 'data' field from the response and set it to users
-        if (data && data.status === "success" && Array.isArray(data.data)) {
-          setUsers(data.data); // Set users if the API response is correct
+    
+        if (data && data.user && Array.isArray(data.user)) {
+          setUsers(data.user); 
         } else {
           console.error("Invalid API response format");
         }
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching users data:", error);
       });
   }, []);
 
