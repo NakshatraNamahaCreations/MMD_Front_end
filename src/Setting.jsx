@@ -518,9 +518,9 @@ const handleDeleteClick = (id) => {
           style={styles.input}
           required
           defaultValue={
-            Array.isArray(editingData?.mobilenumber)
-              ? editingData.mobilenumber.join(", ")
-              : editingData?.mobilenumber || ""
+            Array.isArray(editingData?.mobileNumber)
+              ? editingData.mobileNumber.join(", ")
+              : editingData?.mobileNumber || ""
           }
         />
       </div>
@@ -546,7 +546,11 @@ const handleDeleteClick = (id) => {
             placeholder="Enter Password"
             style={styles.input}
             required
-            defaultValue={editingData?.password || ""}
+            defaultValue={
+              Array.isArray(editingData?.password)
+                ? editingData.password.join(", ")
+                : editingData?.password || ""
+            }
           />
           <span
             onClick={togglePasswordVisibility}

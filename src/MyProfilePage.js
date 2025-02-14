@@ -285,7 +285,7 @@ console.log(response.data.user);
               <input
                 type="text"
                 id="mobile"
-                value={mobilenumber || editingData.mobilenumber || ""}
+                value={mobilenumber || editingData.mobileNumber || ""}
                 onChange={(e) => setMobile(e.target.value)}
                 style={styles.input}
               />

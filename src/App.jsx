@@ -17,6 +17,7 @@ import LoginPage from "./LoginPage";
 import MyProfilePage from "./MyProfilePage"; // Import the correct file
 import { SearchProvider } from "./SearchContext"; // Import SearchProvider
 import Report from "./Report";
+import PaytmPayment from "./PaytmPayment";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
@@ -79,7 +80,10 @@ function App() {
             <Route path="/dead" element={<Dead selectedItem={selectedItem}/>} />
             <Route path="/report" element={<Report />} />
             <Route path="/setting" element={<Setting />} />
+            <Route path="/paytms" element={<PaytmPayment />} />
+
             <Route
+            
               path="/my-profile"
               element={<MyProfilePage profileImage={profileImage} setProfileImage={setProfileImage} />}
             />
