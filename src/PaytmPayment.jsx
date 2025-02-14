@@ -10,28 +10,56 @@ export default function PaytmPayment() {
     setError(null);
 
     try {
-      // ✅ Call backend API to initiate Paytm payment
-      const response = await axios.post("http://localhost:9000/initiatePayment", {
-        customerId: "CUST123",       
-        amount: 100.00,              
-        orderId: "ORDER12345",       
-        industryTypeId: "Retail109",
-        channelId: "WEB",           
-        service: "Car Insurance"     
-      });
-      
-      console.log("Payment Response:", response.data);
+      const payload = {
+        CUST_ID: "12345",
+        TXN_AMOUNT: "1.00",
+        ORDER_ID: `ORD_${Date.now()}`,
+        SERVICE: "BikeTransport",
+    
+            name: "check2",
+            date: "2025-02-11", 
+            time: "10:33:45",
+            source: "website",
+            service: "Car agreement",
+            address: "Bengaluru",
+            email: "part2@example.com",
+            mobilenumber: "9876543210",
+       
+          
+      };
 
-      if (response.data.includes("<html")) {
-        // ✅ Open new tab and inject HTML form to submit
-        const newWindow = window.open("", "_blank");
-        newWindow.document.open();
-        newWindow.document.write(response.data);
-        newWindow.document.close();
+      console.log("Sending Payload:", payload);
+
+      const response = await axios.post("https://api.makemydocuments.in/api/PG/paytm/initiate", payload);
+
+      console.log("Paytm Response:", response.data);
+
+      if (response.data.paramList && response.data.CHECKSUMHASH) {
+        const paramList = response.data.paramList;
+        const paytmTxnUrl = "https://securegw.paytm.in/order/process"; // Live Transaction URL (Use sandbox for testing)
+
+        // ✅ Create a form dynamically and submit it to Paytm
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = paytmTxnUrl;
+
+        // Append all parameters as hidden inputs
+        Object.keys(paramList).forEach((key) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = paramList[key];
+          form.appendChild(input);
+        });
+
+        // Append form to the body and submit
+        document.body.appendChild(form);
+        form.submit();
       } else {
         setError("Payment initiation failed.");
       }
     } catch (err) {
+      console.error("Payment API Error:", err.response ? err.response.data : err.message);
       setError("Error initiating payment.");
     } finally {
       setLoading(false);
@@ -39,64 +67,12 @@ export default function PaytmPayment() {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Paytm Payment Integration</h1>
-
-      <button
-        onClick={initiatePayment}
-        style={loading ? styles.buttonDisabled : styles.button}
-        disabled={loading}
-      >
+    <div style={{ marginLeft: "20rem" }}>
+      <h1>Paytm Payment</h1>
+      <button onClick={initiatePayment} disabled={loading}>
         {loading ? "Processing..." : "Pay with Paytm"}
       </button>
-
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f4f4f4",
-    Width:'60rem',
-    padding: "20px",
-    marginLeft:'20rem'
-  },
-  heading: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    marginBottom: "20px",
-    color: "#333",
-  },
-  button: {
-    padding: "12px 24px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "background 0.3s",
-  },
-  buttonDisabled: {
-    padding: "12px 24px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    backgroundColor: "#ccc",
-    color: "#666",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "not-allowed",
-  },
-  error: {
-    marginTop: "10px",
-    color: "red",
-    fontSize: "14px",
-  },
-};
