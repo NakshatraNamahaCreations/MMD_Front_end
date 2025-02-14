@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
-import './profilepage.css'
+import './profilepage.css';
+import ProfileImg from "./Assests/profile.jpg";
 import { useNavigate } from "react-router-dom";
 
 function MyProfilePage() {
@@ -203,7 +204,7 @@ console.log(response.data.user);
           ? URL.createObjectURL(profileImage) // Use Object URL if the image is a file from FormData
           : adminData?.profile_picture?.startsWith("http")
           ? adminData.profile_picture 
-          : adminData?.profile_picture || "default-profile-picture.jpeg" 
+          : adminData?.profile_picture || ProfileImg
       }
         alt="User Logo"
         style={{

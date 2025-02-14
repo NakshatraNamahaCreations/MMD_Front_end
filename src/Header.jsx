@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef  } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import userlogo from "../src/images/logo.svg.svg";
 import axios from "axios";
+import ProfileImg from "./Assests/profile.jpg";
 
 function Header({ selectedItem }) {
   const [isOffcanvasVisible, setOffcanvasVisible] = useState(false);
@@ -11,7 +12,8 @@ function Header({ selectedItem }) {
   const navigate = useNavigate();
   const offcanvasRef = useRef(null);
   const userProfileRef = useRef(null);
-console.log ( selectedItem ,"selectedItem")
+console.log ( selectedItem ,"selectedItem");
+
   const adminData = sessionStorage.getItem("admin");
   let parsedAdminData = null;
 
@@ -133,7 +135,7 @@ console.log ( selectedItem ,"selectedItem")
       <div className="user-profile">
         <div className="header-right" onClick={toggleOffcanvas} ref={userProfileRef}>
           <img
-              src= { parsedAdminData?.profile_picture }
+              src= { parsedAdminData?.profile_picture || ProfileImg }
             alt="User Logo"
             style={{
               width: "60px",
@@ -175,7 +177,7 @@ console.log ( selectedItem ,"selectedItem")
             }}
           >
             <img
-              src= { parsedAdminData?.profile_picture }
+              src= { parsedAdminData?.profile_picture || ProfileImg }
               alt="User Logo"
               style={{
                 width: "60px",
