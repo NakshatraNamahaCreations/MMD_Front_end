@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   BsFillGearFill,
   BsPlusCircle,
@@ -113,6 +114,7 @@ function Sidebar({ selectedItem, setSelectedItem }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isOpen, setIsOpen] = useState(!isMobile);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -128,7 +130,7 @@ function Sidebar({ selectedItem, setSelectedItem }) {
 
   useEffect(() => {
     if (isMobile) {
-      setIsOpen(false); // Close sidebar after navigating
+      setIsOpen(false); 
     }
   }, [location.pathname, isMobile]); // Ensure sidebar closes on navigation
 
@@ -144,6 +146,14 @@ function Sidebar({ selectedItem, setSelectedItem }) {
     { id: 9, label: "Dead", path: "/dead", icon: <BsXCircle /> },
     { id: 10, label: "Settings", path: "/setting", icon: <BsFillGearFill /> },
   ];
+  const handleNavigation = (path) => {
+    if (location.pathname === path) {
+      navigate(0); // Forces a full reload
+    } else {
+      navigate(path); // Navigates normally
+      setIsOpen(false);
+    }
+  };
 
   const adminData = JSON.parse(sessionStorage.getItem("admin"));
 
@@ -175,21 +185,23 @@ function Sidebar({ selectedItem, setSelectedItem }) {
 
       {/* Sidebar */}
       <SidebarContainer isOpen={isOpen}>
-        {/* <div style={{ padding: "20px", textAlign: "center", display: isOpen ? "block" : "none" }}>
-          <img src={logo} alt="Logo" style={{ width: "100%", maxWidth: "150px" }} />
-        </div> */}
-
-        <SidebarList>
-          {filteredMenuItems.map((item) => (
-            <SidebarListItem key={item.id}>
-              <SidebarLink to={item.path} onClick={() => setIsOpen(false)}>
-                <SidebarIcon>{item.icon}</SidebarIcon>
-                <SidebarLabel>{item.label}</SidebarLabel>
-              </SidebarLink>
-            </SidebarListItem>
-          ))}
-        </SidebarList>
-      </SidebarContainer>
+      <SidebarList>
+        {filteredMenuItems.map((item) => (
+          <SidebarListItem key={item.id}>
+            <SidebarLink
+              to={item.path}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent default React Router behavior
+                handleNavigation(item.path);
+              }}
+            >
+              <SidebarIcon>{item.icon}</SidebarIcon>
+              <SidebarLabel>{item.label}</SidebarLabel>
+            </SidebarLink>
+          </SidebarListItem>
+        ))}
+      </SidebarList>
+    </SidebarContainer>
 
       {/* Overlay to Close Sidebar on Mobile Click */}
       <Overlay show={isMobile && isOpen} onClick={() => setIsOpen(false)} />

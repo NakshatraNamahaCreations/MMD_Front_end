@@ -3,6 +3,7 @@ import axios from "axios";
 import { Button, Modal } from "react-bootstrap";
 import { FaTrash, FaFilter } from 'react-icons/fa';
 import { Helmet } from "react-helmet";
+import { useDispatch } from "react-redux";
 
 
 function InProcess({ selectedItem }) {
@@ -26,6 +27,7 @@ function InProcess({ selectedItem }) {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const adminData = JSON.parse(sessionStorage.getItem("admin"));
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchLeads = async () => {

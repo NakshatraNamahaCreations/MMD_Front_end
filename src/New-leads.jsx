@@ -323,6 +323,7 @@ useEffect(() => {
     console.log("clicked leads", lead);
     setSelectedLead(lead);
     setAssignedUser(lead.assign || "");
+    fetchCommentData()
   };
 
   const handlePageChange = (newPage) => {
@@ -366,7 +367,7 @@ useEffect(() => {
       if (response.ok) {
         console.log("response", response);
 
-        // window.location.reload();
+        window.location.reload();
         alert(
           `Status updated to ${status} and assigned to ${assignedUser} successfully!`
         );
@@ -386,6 +387,7 @@ useEffect(() => {
     if (selectedLead?.id && !submittedComment?.comment) {
       fetchCommentData(selectedLead.id);
     }
+    
   }, [selectedLead?.id, submittedComment?.comment]);
 
   const fetchCommentData = async (leadId) => {

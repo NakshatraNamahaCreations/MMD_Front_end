@@ -18,11 +18,14 @@ import MyProfilePage from "./MyProfilePage"; // Import the correct file
 import { SearchProvider } from "./SearchContext"; // Import SearchProvider
 import Report from "./Report";
 import PaytmPayment from "./PaytmPayment";
+import Loading from "./Component/Loading";
+import { useSelector } from "react-redux";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [profileImage, setProfileImage] = useState(null);
+  const loading = useSelector((state) => state.loader.loading);
 
   const OpenSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
@@ -62,6 +65,7 @@ function App() {
 
   return (
     <SearchProvider>
+      <Loading loading={loading}/>
       <Router>
         <Layout>
           <Routes>

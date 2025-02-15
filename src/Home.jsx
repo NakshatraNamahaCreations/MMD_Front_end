@@ -7,6 +7,8 @@ import {
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { Helmet } from "react-helmet";
+import { useDispatch } from "react-redux";
+import { setLoading } from "./redux/loaderSlice";
 
 function Home() {
   const [counts, setCounts] = useState({
@@ -27,7 +29,7 @@ function Home() {
  const [inprocesscount, setinprocesscount] = useState()
  const [todaysfollowupcount, settodaysfollowupcount] = useState()
  const adminData = JSON.parse(sessionStorage.getItem("admin"));
-
+const dispatch = useDispatch();
 
 
 
@@ -83,7 +85,9 @@ useEffect(() => {
   useEffect(() => {
     const data1 = { assign: adminData.name };
     const fetchFollowUpCount = async () => {
+      // dispatch(setLoading(true));
       try {
+ 
         // Use POST to send `data1` as the body of the request
         const response = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/getStatusCount`,
@@ -96,13 +100,16 @@ useEffect(() => {
         );
   
         setfollowupcount(response.data.data.followups ? response.data.data.followups : 0);
+        dispatch(setLoading(false));
       } catch (error) {
+        dispatch(setLoading(false));
         console.error("Error fetching follow-up count:", error);
       }
+ 
     };
   
     fetchFollowUpCount();
-  }, [adminData.name]);
+  }, [adminData?.name]);
   
   
   useEffect(() => {
