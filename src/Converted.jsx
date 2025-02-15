@@ -636,7 +636,7 @@ function Converted({selectedItem}) {
                                          <strong>Order Id:</strong>
                                          <input
                                            type="text"
-                                           value={selectedLead?.orderid}
+                                           value={selectedLead?.orderId}
                                            style={{ ...styles.input, textTransform: "uppercase" }} 
                                          />
                                        </div>
@@ -1885,12 +1885,16 @@ function Converted({selectedItem}) {
           
                 {/* General Info */}
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", marginBottom: "10px" }}>
-  {["Order Id", "Name", "Service"].map((label, index) => (
+                {[
+    { label: "Order Id", key: "orderId" },
+    { label: "Name", key: "name" },
+    { label: "Service", key: "service" }
+  ].map(({ label, key }, index) => (
     <div key={index} style={{ flex: "1", minWidth: "48%", margin: "5px" }}>
       <strong>{label}:</strong>
       <input
         type="text"
-        value={selectedLead?.[label.toLowerCase().replace(" ", "")]}
+        value={selectedLead?.[key] || ""}
         style={{
           width: "100%",
           padding: "10px",
@@ -1902,7 +1906,6 @@ function Converted({selectedItem}) {
       />
     </div>
   ))}
-
 <div style={{ flex: "1", minWidth: "48%", margin: "5px" }}>
     <strong>Assigned User:</strong>
     <input

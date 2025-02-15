@@ -603,10 +603,7 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
           <table className="leads-table" style={{ width: "100%" }}>
             <thead>
               <tr style={styles.tableHeaderRow}>
-              <th style={styles.tableHeader}>
-            Sl.No  
-            
-          </th>
+              <th style={styles.tableHeader}>Sl.No</th>
                 <th style={styles.tableHeader}>Date <FaFilter style={styles.icon}  onClick={() => handleFilterClick('date')} /></th>
                 <th style={styles.tableHeader}>Name <FaFilter style={styles.icon} onClick={() => handleFilterClick('name')}/></th>
                 <th style={styles.tableHeader}>District <FaFilter style={styles.icon} onClick={() => handleFilterClick('district')}/></th>
@@ -622,7 +619,7 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
             <tbody>
               {currentLeads.map((lead, index) => (
                 <tr key={index} style={styles.tableRow}>
-                  <td style={styles.tableCell}>{lead.slNo}</td>
+                  <td style={styles.tableCell} onClick={() => handleRowClick(lead)}>  {index + 1 + (currentPage - 1) * leadsPerPage}</td>
                   <td
                     style={{ ...styles.tableCell, whiteSpace: "nowrap" }}
                     onClick={() => handleRowClick(lead)}
@@ -657,7 +654,7 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
                     style={styles.tableCell}
                     onClick={() => handleRowClick(lead)}
                   >
-                    {lead.paidAmount}
+                    {lead.paidAmount || '0'}
                   </td>
 
                   <td
@@ -744,7 +741,7 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
               <strong>Order Id:</strong>
               <input
                 type="text"
-                value={selectedLead?.orderid}
+                value={selectedLead?.orderId}
                 style={{ ...styles.input, textTransform: "uppercase" }} 
               />
             </div>
@@ -1929,7 +1926,7 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
             <tbody>
               {currentLeads.map((lead, index) => (
                 <tr key={index} style={{ borderBottom: "1px solid #ddd" }} >
-                  <td style={{ padding: "10px", borderRight: "1px solid #ddd" }} onClick={() => setSelectedLead(lead)}>{lead.slNo}</td>
+                  <td style={{ padding: "10px", borderRight: "1px solid #ddd" }} onClick={() => setSelectedLead(lead)}>{index + 1 + (currentPage - 1) * leadsPerPage}</td>
                   <td style={{ padding: "10px", whiteSpace: "nowrap" , borderRight: "1px solid #ddd"}} onClick={() => setSelectedLead(lead)}>{lead.date}</td>
                   <td style={{ padding: "10px", borderRight: "1px solid #ddd" }} onClick={() => setSelectedLead(lead)}>{lead.name}</td>
                   <td style={{ padding: "10px", borderRight: "1px solid #ddd" }} onClick={() => setSelectedLead(lead)}>{lead.service}</td>
@@ -2047,12 +2044,16 @@ const filteredByAppliedFilters = applyFilters(currentLeads);
   
         {/* General Info */}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", marginBottom: "10px" }}>
-  {["Order Id", "Name", "Service"].map((label, index) => (
+        {[
+    { label: "Order Id", key: "orderId" },
+    { label: "Name", key: "name" },
+    { label: "Service", key: "service" }
+  ].map(({ label, key }, index) => (
     <div key={index} style={{ flex: "1", minWidth: "48%", margin: "5px" }}>
       <strong>{label}:</strong>
       <input
         type="text"
-        value={selectedLead?.[label.toLowerCase().replace(" ", "")]}
+        value={selectedLead?.[key] || ""}
         style={{
           width: "100%",
           padding: "10px",
